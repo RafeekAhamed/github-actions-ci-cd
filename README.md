@@ -1,4 +1,4 @@
-﻿# GitHub Actions CI/CD â€“ React Application
+# GitHub Actions CI/CD – React Application
 
 A production-oriented CI/CD project that automates validation of a React application, builds a hardened Docker image, and publishes the image to GitHub Container Registry (GHCR).
 
@@ -42,6 +42,7 @@ Pull requests run the application validation job. The image-publishing job is sk
 
 ## Architecture
 
+```text
 Developer
    |
    | git push / pull request
@@ -80,25 +81,29 @@ GitHub Actions
                          |
                          v
                    React application
+```
 
 ## Repository Structure
 
 The following top-level entries are present in the repository:
 
-â”œâ”€â”€ .github/
-â”‚   â””â”€â”€ workflows/
-â”‚       â””â”€â”€ ci.yml
-â”œâ”€â”€ app/                  # React + Vite application
-â”œâ”€â”€ docker/
-â”œâ”€â”€ docs/
-â”œâ”€â”€ nginx/                # Nginx runtime configuration
-â”œâ”€â”€ screenshots/
-â”œâ”€â”€ src/
-â”œâ”€â”€ tests/
-â”œâ”€â”€ .dockerignore
-â”œâ”€â”€ .gitignore
-â”œâ”€â”€ compose.yaml
-â””â”€â”€ Dockerfile
+```text
+.
+├── .github/
+│   └── workflows/
+│       └── ci.yml
+├── app/                  # React + Vite application
+├── docker/
+├── docs/
+├── nginx/                # Nginx runtime configuration
+├── screenshots/
+├── src/
+├── tests/
+├── .dockerignore
+├── .gitignore
+├── compose.yaml
+└── Dockerfile
+```
 
 The React application is maintained in `app/`. Its npm commands should be run from that directory.
 
@@ -146,15 +151,15 @@ The workflow is configured to publish:
 
 Image repository:
 
-
+```text
 ghcr.io/rafeekahamed/github-actions-ci-cd
-
+```
 
 Example:
 
-
+```text
 ghcr.io/rafeekahamed/github-actions-ci-cd:latest
-
+```
 
 ## Run the React Application Locally
 
@@ -165,15 +170,19 @@ Requirements:
 
 Open PowerShell in the application directory:
 
+```powershell
 cd app
 npm ci
 npm run lint
 npm run test:run
 npm run build
+```
 
 To start the development server:
 
+```powershell
 npm run dev
+```
 
 Vite prints the local development URL in the terminal.
 
@@ -183,56 +192,80 @@ Run these commands from the repository root.
 
 Build the multi-stage image:
 
+```powershell
 docker build -t github-actions-ci-cd:local .
+```
 
 Run it:
 
+```powershell
 docker run --detach `
   --name github-actions-ci-cd-local `
   --publish 8080:8080 `
   github-actions-ci-cd:local
+```
 
 Check container status:
 
+```powershell
 docker ps
+```
 
 Check the HTTP response:
 
+```powershell
 Invoke-WebRequest http://localhost:8080
+```
 
 Expected HTTP status:
 
+```text
 200 OK
+```
 
 Stop and remove the test container:
 
+```powershell
 docker rm --force github-actions-ci-cd-local
+```
 
 ## Docker Compose Deployment
 
 The checked-in `compose.yaml` uses the `v4` image tag:
 
+```text
 ghcr.io/rafeekahamed/github-actions-ci-cd:v4
+```
 
 Authenticate to GHCR first if the package is private:
 
+```powershell
 docker login ghcr.io
+```
 
 Start the service:
 
+```powershell
 docker compose up -d
+```
 
 Inspect the service and health status:
 
+```powershell
 docker compose ps
+```
 
 Check the application:
 
+```powershell
 Invoke-WebRequest http://localhost:8080
+```
 
 Stop the service:
 
+```powershell
 docker compose down
+```
 
 The container listens on port `8080`, which is mapped to host port `8080`.
 
@@ -265,7 +298,7 @@ Recorded assessment results for the CI-published image:
 
 | Check | Result |
 |---|---|
-| Docker Scout health score | A â€” 94% |
+| Docker Scout health score | A — 94% |
 | Critical vulnerabilities | 0 |
 | High vulnerabilities | 0 |
 | Medium vulnerabilities | 0 |
@@ -289,26 +322,34 @@ The remaining failed Scout policy concerns copyleft-licensed packages inherited 
 
 The published GHCR image was verified to include:
 
-- **SPDX SBOM** â€” package inventory for the image.
-- **SLSA provenance v1** â€” build provenance metadata.
+- **SPDX SBOM** — package inventory for the image.
+- **SLSA provenance v1** — build provenance metadata.
 
 The attestation metadata identifies the GitHub repository and source commit used for the image build.
 
 Inspect the published image:
 
+```powershell
 docker buildx imagetools inspect ghcr.io/rafeekahamed/github-actions-ci-cd:latest
+```
 
 Inspect attestations:
 
+```powershell
 docker scout attest list registry://ghcr.io/rafeekahamed/github-actions-ci-cd:latest
+```
 
 Review vulnerabilities:
 
+```powershell
 docker scout cves registry://ghcr.io/rafeekahamed/github-actions-ci-cd:latest
+```
 
 Review policy:
 
+```powershell
 docker scout policy registry://ghcr.io/rafeekahamed/github-actions-ci-cd:latest
+```
 
 ## Verification Summary
 
@@ -347,7 +388,7 @@ The following checks were completed during project implementation:
 
 ## Author
 
-**Rafeek Ahamed M**
+**Rafeek Ahamed M**  
 DevOps Engineer | Azure Cloud Engineer
 
 - GitHub: https://github.com/RafeekAhamed
