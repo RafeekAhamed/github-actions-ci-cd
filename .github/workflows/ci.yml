@@ -1,4 +1,4 @@
-name: CI - React Application
+﻿name: CI/CD - React and Docker
 
 on:
   push:
@@ -15,12 +15,12 @@ permissions:
   contents: read
 
 concurrency:
-  group: ci-${{ github.workflow }}-${{ github.ref }}
+  group: ci-cd-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
   build-and-test:
-    name: Build and Test
+    name: Build and Test React Application
     runs-on: ubuntu-latest
 
     defaults:
@@ -49,3 +49,50 @@ jobs:
 
       - name: Build production application
         run: npm run build
+
+  docker-build-and-push:
+    name: Build and Publish Docker Image
+    runs-on: ubuntu-latest
+    needs: build-and-test
+    if: github.event_name != 'pull_request'
+
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v4
+
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract Docker metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/rafeekahamed/github-actions-ci-cd
+          tags: |
+            type=raw,value=latest,enable={{is_default_branch}}
+            type=sha,prefix=sha-
+
+      - name: Build and publish Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          platforms: linux/amd64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          provenance: mode=max,version=v1
+          attests: type=sbom,generator=docker/scout-sbom-indexer:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
