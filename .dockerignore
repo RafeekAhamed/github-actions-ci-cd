@@ -1,0 +1,35 @@
+# Dependencies
+node_modules
+**/node_modules
+
+# Build output
+dist
+**/dist
+
+# Git
+.git
+.gitignore
+
+# GitHub Actions
+.github
+
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# Testing
+coverage
+**/coverage
+
+# Logs
+*.log
+npm-debug.log*
+
+# IDE
+.vscode
+.idea
+
+# Operating system
+.DS_Store
+Thumbs.db
